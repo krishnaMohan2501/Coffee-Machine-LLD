@@ -58,7 +58,7 @@ public class Main {
         RequestPojo requestObj = transformRequest(requestBody);
 
         BeverageMaker beverageMaker = BeverageMaker.INSTANCE;
-        beverageMaker.assignOutletsToMaker(RequestUtil.getOutLetFromRequestBody(requestObj));
+        beverageMaker.initialize(RequestUtil.getOutLetFromRequestBody(requestObj));
 
         if(!beverageMaker.canMakeBeverages()){
             TotalItemsQuantity totalItemsQuantity = RequestUtil.getItemsQuantityFromReq(requestObj);

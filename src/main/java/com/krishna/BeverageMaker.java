@@ -1,6 +1,7 @@
 package com.krishna;
 
 import com.krishna.beverages.Beverages;
+import com.krishna.enums.IngredientEnum;
 import com.krishna.pojo.TotalItemsQuantity;
 import com.krishna.results.ResultList;
 import com.krishna.storage.IngredientStorage;
@@ -8,6 +9,7 @@ import com.krishna.util.BeverageUtil;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.*;
 
 /**
  * Singleton class, since we only need to design a solution to run on single machine
@@ -16,10 +18,17 @@ public class BeverageMaker implements Maker{
 
     private int noOfOutLets;
     private IngredientStorage storage;
+    public  ExecutorService executor;
     ResultList resultList = ResultList.INSTANCE;
     public static BeverageMaker INSTANCE = new BeverageMaker();
-    public BeverageMaker(){
+
+
+    public BeverageMaker(){}
+
+    public void initialize(int noOfOutLets){
         storage = new IngredientStorage();
+        this.noOfOutLets = noOfOutLets;
+        this.executor = Executors.newFixedThreadPool(noOfOutLets);
     }
 
     /**
@@ -36,58 +45,40 @@ public class BeverageMaker implements Maker{
     }
 
     /**
-     * if beverage Maker is empty, means ingredients are empty then
-     * we can not make any beverages
-     * @return
-     */
-    public boolean canMakeBeverages(){
-        return !storage.getIngredientsWithQuantity().isEmpty();
-    }
-
-    /**
-     * Assign the no of outlets to beverage Maker
-     * @param noOfOutLets
-     */
-    public void assignOutletsToMaker(int noOfOutLets){
-        this.noOfOutLets = noOfOutLets;
-    }
-
-    /**
      * Function is responsible for making beverages
      * @param beveragesAndIngredientMap
      */
     @Override
     public void make(Map<String, Map<String, Integer>> beveragesAndIngredientMap){
         List<Beverages> beveragesObject = BeverageUtil.getBeveragesObject(beveragesAndIngredientMap);
+        executor.submit(new Runnable() {
 
-        int totalBeverages = beveragesObject.size();
-        // at a same time
-        int noBatches = totalBeverages / noOfOutLets;
-        int leftOut = totalBeverages % noOfOutLets;
+            @Override
+            public void run() {
+                populateResult(beveragesObject);
+            }
+        });
 
-        for(int i=0;i<noBatches;i++){
-            int start = i*noOfOutLets;
-            int end = start + noOfOutLets;
-            List<Beverages> groupBeverages = beveragesObject.subList(start, end);
-            serveBeverages(groupBeverages);
-            System.out.println( " ");
-        }
-
-        if(leftOut > 0){
-            List<Beverages> leftOutBeverages = beveragesObject.subList(totalBeverages-1,totalBeverages);
-            serveBeverages(leftOutBeverages);
-        }
+        executor.shutdownNow();
     }
 
-    private void serveBeverages(List<Beverages> beverages){
+    private void populateResult(List<Beverages> beverages){
 
         for(Beverages beverage: beverages){
             Map<String, Integer> allIngredientValues = storage.get();
-            if(beverage.isAllIngredientPresent(allIngredientValues) &&
-                    beverage.canServe(allIngredientValues)){
+            if(beverage.isAllIngredientPresent(allIngredientValues) && beverage.canServe(allIngredientValues)){
                 resultList.getResults().add(beverage.getType() + " " + "is prepared");
                 storage.update(beverage);
             }
         }
+    }
+
+    /**
+     * if beverage Maker is empty, means ingredients are empty then
+     * we can not make any beverages
+     * @return
+     */
+    public boolean canMakeBeverages(){
+        return !storage.getIngredientsWithQuantity().isEmpty();
     }
 }

@@ -1,4 +1,4 @@
-package com.krishna;
+package com.krishna.enums;
 
 public enum IngredientEnum {
     HOT_WATER("hot_water"),

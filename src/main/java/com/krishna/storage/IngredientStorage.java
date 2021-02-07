@@ -1,7 +1,7 @@
 package com.krishna.storage;
 
-import com.krishna.BeverageType;
-import com.krishna.IngredientEnum;
+import com.krishna.enums.BeverageType;
+import com.krishna.enums.IngredientEnum;
 import com.krishna.beverages.*;
 import lombok.Getter;
 

@@ -1,6 +1,6 @@
 package com.krishna.util;
 
-import com.krishna.BeverageType;
+import com.krishna.enums.BeverageType;
 import com.krishna.GetBeverageFactory;
 import com.krishna.beverages.Beverages;
 import com.krishna.results.ResultList;
@@ -8,6 +8,8 @@ import com.krishna.results.ResultList;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Utility class for BeverageMaker
@@ -27,11 +29,15 @@ public class BeverageUtil {
     }
 
     public static void displayResult() {
-        ResultList resultList = ResultList.INSTANCE;
-        List<String> results = resultList.getResults();
-        for(String result: results){
-            System.out.println(result);
+        try {
+            ResultList resultList = ResultList.INSTANCE;
+            TimeUnit.MILLISECONDS.sleep(650);
+            Queue<String> results = resultList.getResults();
+            for(String result: results){
+                System.out.println(result);
+            }
+        }catch (Exception ex){
+            System.out.println("error Occurred while printing the results");
         }
-
     }
 }

@@ -1,6 +1,8 @@
 package com.krishna;
 
 import com.krishna.beverages.*;
+import com.krishna.enums.BeverageType;
+import com.krishna.enums.IngredientEnum;
 
 import java.util.Map;
 import java.util.Objects;
