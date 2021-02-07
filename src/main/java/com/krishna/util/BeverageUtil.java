@@ -31,7 +31,7 @@ public class BeverageUtil {
     public static void displayResult() {
         try {
             ResultList resultList = ResultList.INSTANCE;
-            TimeUnit.MILLISECONDS.sleep(650);
+//            TimeUnit.MILLISECONDS.sleep(650);
             Queue<String> results = resultList.getResults();
             for(String result: results){
                 System.out.println(result);

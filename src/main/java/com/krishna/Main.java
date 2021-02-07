@@ -66,7 +66,7 @@ public class Main {
         }
         Map<String, Map<String,Integer>> beveragesAndIngredientMap = RequestUtil.getBeveragesAndIngredientMap(requestObj);
         beverageMaker.make(beveragesAndIngredientMap);
-        BeverageUtil.displayResult();
+//        BeverageUtil.displayResult();
 
     }
 

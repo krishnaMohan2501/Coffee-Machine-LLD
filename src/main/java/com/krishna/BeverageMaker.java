@@ -5,6 +5,8 @@ import com.krishna.enums.IngredientEnum;
 import com.krishna.pojo.TotalItemsQuantity;
 import com.krishna.results.ResultList;
 import com.krishna.storage.IngredientStorage;
+import com.krishna.strategy.RefillContext;
+import com.krishna.strategy.RefillDefaultStrategy;
 import com.krishna.util.BeverageUtil;
 
 import java.util.List;
@@ -21,6 +23,8 @@ public class BeverageMaker implements Maker{
     public  ExecutorService executor;
     ResultList resultList = ResultList.INSTANCE;
     public static BeverageMaker INSTANCE = new BeverageMaker();
+    RefillDefaultStrategy defaultStrategy;
+    RefillContext context;
 
 
     public BeverageMaker(){}
@@ -29,6 +33,8 @@ public class BeverageMaker implements Maker{
         storage = new IngredientStorage();
         this.noOfOutLets = noOfOutLets;
         this.executor = Executors.newFixedThreadPool(noOfOutLets);
+        defaultStrategy = new RefillDefaultStrategy();
+        context = new RefillContext(defaultStrategy);
     }
 
     /**
@@ -55,30 +61,53 @@ public class BeverageMaker implements Maker{
 
             @Override
             public void run() {
-                populateResult(beveragesObject);
+                populateResultAndUpdateDB(beveragesObject);
             }
         });
 
         executor.shutdownNow();
     }
 
-    private void populateResult(List<Beverages> beverages){
+    private void populateResultAndUpdateDB(List<Beverages> beverages){
 
+        int miss = 0;
+        int total = beverages.size();
         for(Beverages beverage: beverages){
-            Map<String, Integer> allIngredientValues = storage.get();
+            Map<String, Integer> allIngredientValues = storage.getAll();
             if(beverage.isAllIngredientPresent(allIngredientValues) && beverage.canServe(allIngredientValues)){
                 resultList.getResults().add(beverage.getType() + " " + "is prepared");
-                storage.update(beverage);
+
+                // after making beverages we have to subtract the ingredients Quantity form DB
+                int hotWater_db = storage.get(IngredientEnum.HOT_WATER.getIngredient());
+                int gingerSyrup_db = storage.get(IngredientEnum.GINGER_SYRUP.getIngredient());
+                int sugarSyp_db  = storage.get(IngredientEnum.SUGAR_SYRUP.getIngredient());
+
+                storage.update(IngredientEnum.HOT_WATER.getIngredient(), hotWater_db - beverage.getHotWater());
+                storage.update(IngredientEnum.GINGER_SYRUP.getIngredient(), gingerSyrup_db - beverage.getGingerSyrup());
+                storage.update(IngredientEnum.SUGAR_SYRUP.getIngredient(), sugarSyp_db - beverage.getSugarSyrup());
+                storage.updateBasedOnType(beverage);
+
+            }else{
+                miss++;
             }
+        }
+
+        BeverageUtil.displayResult();
+
+        /**
+         * Default strategy to check if refill is required or not.
+         */
+        if(context.executeStrategy(miss, total)){
+            System.out.println("Kindly refill the machine");
         }
     }
 
     /**
      * if beverage Maker is empty, means ingredients are empty then
-     * we can not make any beverages
+     * we can not make any beverages. Just for validation
      * @return
      */
     public boolean canMakeBeverages(){
-        return !storage.getIngredientsWithQuantity().isEmpty();
+        return !storage.checkIfDbEmpty();
     }
 }

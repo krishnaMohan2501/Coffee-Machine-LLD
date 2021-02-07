@@ -7,9 +7,14 @@ import java.util.Map;
 public interface Storage{
     public void add(String key, Integer value);
 
-    void update(Beverages beverage);
+    void updateBasedOnType(Beverages beverage);
 
-    Map<String, Integer> get();
+    Map<String, Integer> getAll();
 
-    boolean refill(String key);
+    int get(String key);
+
+    void update(String key, Integer value);
+
+    boolean checkIfDbEmpty();
+
 }

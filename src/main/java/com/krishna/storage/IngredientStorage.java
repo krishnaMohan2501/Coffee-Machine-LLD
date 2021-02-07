@@ -13,7 +13,7 @@ import java.util.Map;
  */
 public class IngredientStorage implements Storage {
 
-    @Getter
+
     private Map<String, Integer> ingredientsWithQuantity =   new HashMap<>();
 
     public IngredientStorage() {
@@ -22,21 +22,10 @@ public class IngredientStorage implements Storage {
     public void add(String key, Integer value) {
         ingredientsWithQuantity.put(key,value);
     }
+
     // update function -> to update storage based on beverage type
     @Override
-    public void update(Beverages beverage) {
-
-        int hotWater = beverage.getHotWater();
-        int gingerSyrup = beverage.getGingerSyrup();
-        int sugarSyrup = beverage.getSugarSyrup();
-
-        int hotWater_db = ingredientsWithQuantity.get(IngredientEnum.HOT_WATER.getIngredient());
-        int gingerSyrup_db = ingredientsWithQuantity.get(IngredientEnum.GINGER_SYRUP.getIngredient());
-        int sugarSyp_db  = ingredientsWithQuantity.get(IngredientEnum.SUGAR_SYRUP.getIngredient());
-
-        ingredientsWithQuantity.put(IngredientEnum.HOT_WATER.getIngredient(), hotWater_db - hotWater);
-        ingredientsWithQuantity.put(IngredientEnum.GINGER_SYRUP.getIngredient(), gingerSyrup_db - gingerSyrup);
-        ingredientsWithQuantity.put(IngredientEnum.SUGAR_SYRUP.getIngredient(), sugarSyp_db - sugarSyrup);
+    public void updateBasedOnType(Beverages beverage) {
 
         String type = beverage.getType();
         if(type.equalsIgnoreCase(BeverageType.BLACK_TEA.getBeverageType())){
@@ -49,34 +38,29 @@ public class IngredientStorage implements Storage {
         } else if(type.equalsIgnoreCase(BeverageType.GREEN_TEA.getBeverageType())){
 
             GreenTea greenTea = (GreenTea) beverage;
-            int green_mix = greenTea.getGreenMixture();
             int green_mix_db = ingredientsWithQuantity.get(IngredientEnum.GREEN_MIXTURE.getIngredient());
-            ingredientsWithQuantity.put(IngredientEnum.SUGAR_SYRUP.getIngredient(), green_mix_db - green_mix);
+            ingredientsWithQuantity.put(IngredientEnum.SUGAR_SYRUP.getIngredient(), green_mix_db - greenTea.getGreenMixture());
 
         } else if(type.equalsIgnoreCase(BeverageType.HOT_TEA.getBeverageType())){
 
             HotTea hotTea = (HotTea) beverage;
-            int hotMilk = hotTea.getHotMilk();
-            int teaLeavesSyrup = hotTea.getTeaLeavesSyrup();
             int hotMilk_db = ingredientsWithQuantity.get(IngredientEnum.HOT_MILK.getIngredient());
             int teaLeavesSyrup_db = ingredientsWithQuantity.get(IngredientEnum.TEA_LEAVES_SYRUP.getIngredient());
-            ingredientsWithQuantity.put(IngredientEnum.HOT_MILK.getIngredient(), hotMilk_db - hotMilk);
-            ingredientsWithQuantity.put(IngredientEnum.TEA_LEAVES_SYRUP.getIngredient(), teaLeavesSyrup_db - teaLeavesSyrup);
+            ingredientsWithQuantity.put(IngredientEnum.HOT_MILK.getIngredient(), hotMilk_db - hotTea.getHotMilk());
+            ingredientsWithQuantity.put(IngredientEnum.TEA_LEAVES_SYRUP.getIngredient(), teaLeavesSyrup_db - hotTea.getTeaLeavesSyrup());
 
         }else if(type.equalsIgnoreCase(BeverageType.HOT_COFFEE.getBeverageType())){
 
             HotCoffee hotCoffee= (HotCoffee) beverage;
-            int hotMilk = hotCoffee.getHotMilk();
-            int teaLeavesSyrup = hotCoffee.getTeaLeavesSyrup();
             int hotMilk_db = ingredientsWithQuantity.get(IngredientEnum.HOT_MILK.getIngredient());
             int teaLeavesSyrup_db = ingredientsWithQuantity.get(IngredientEnum.TEA_LEAVES_SYRUP.getIngredient());
-            ingredientsWithQuantity.put(IngredientEnum.HOT_MILK.getIngredient(), hotMilk_db - hotMilk);
-            ingredientsWithQuantity.put(IngredientEnum.TEA_LEAVES_SYRUP.getIngredient(), teaLeavesSyrup_db - teaLeavesSyrup);
+            ingredientsWithQuantity.put(IngredientEnum.HOT_MILK.getIngredient(), hotMilk_db - hotCoffee.getHotMilk());
+            ingredientsWithQuantity.put(IngredientEnum.TEA_LEAVES_SYRUP.getIngredient(), teaLeavesSyrup_db - hotCoffee.getTeaLeavesSyrup());
         }
     }
 
     @Override
-    public  Map<String, Integer> get() {
+    public  Map<String, Integer> getAll() {
         Map<String, Integer> results = new HashMap<>();
 
         int hotWaterValue = ingredientsWithQuantity.getOrDefault(IngredientEnum.HOT_WATER.getIngredient(), -1);
@@ -98,7 +82,18 @@ public class IngredientStorage implements Storage {
     }
 
     @Override
-    public boolean refill(String key)  {
-        return false;
+    public int get(String key) {
+        return ingredientsWithQuantity.getOrDefault(key,-1);
     }
+
+    @Override
+    public void update(String key, Integer value) {
+        ingredientsWithQuantity.put(key,value);
+    }
+
+    @Override
+    public boolean checkIfDbEmpty() {
+        return ingredientsWithQuantity.isEmpty();
+    }
+
 }
