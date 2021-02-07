@@ -10,7 +10,7 @@ public class RefillDefaultStrategy implements Strategy{
 
     @Override
     public boolean checkIfRefillNeeded(int misscount, int total) {
-        if((misscount / total)*100 < 20){
+        if((misscount / total)*100 < 30){
             return true;
         }
 
